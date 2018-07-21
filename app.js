@@ -37,5 +37,7 @@ app.use(function(err, req, res, next) {
 
 
 var httpServer = http.createServer(app);
-process.env.DB_HOST,
+httpServer.listen(process.env.PORT, function() {
+  console.log('HTTP Server is running on: http://localhost:%s', PORT);
+});
 module.exports = app;
