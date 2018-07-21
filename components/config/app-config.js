@@ -1,5 +1,5 @@
 const config  = {
-    modules:[]
+    modules:['loginEngine']
 }
 
 module.exports  = config;

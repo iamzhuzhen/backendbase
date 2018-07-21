@@ -6,6 +6,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var http = require('http');
+var init = require('./init.js')
 
 var app = express();
 
@@ -17,12 +18,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+init.loadingRoutes(app);
+
+
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
+
 
 // error handler
 app.use(function(err, req, res, next) {
@@ -32,12 +38,15 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.send('error');
 });
 
 
-var httpServer = http.createServer(app);
-httpServer.listen(process.env.PORT, function() {
-  console.log('HTTP Server is running on: http://localhost:%s', PORT);
-});
+// var httpServer = http.createServer(app);
+// httpServer.listen(process.env.PORT, function() {
+//   console.log('HTTP Server is running on: http://localhost:%s', process.env.PORT);
+// });
+// app.listen(process.env.PORT, function () {
+//   console.log('Ready');
+// })
 module.exports = app;
