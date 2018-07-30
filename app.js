@@ -6,6 +6,8 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var http = require('http');
+var https = require('https');
+var fs = require('fs'); 
 var init = require('./init.js')
 
 var app = express();
@@ -42,11 +44,11 @@ app.use(function(err, req, res, next) {
 });
 
 
-// var httpServer = http.createServer(app);
-// httpServer.listen(process.env.PORT, function() {
-//   console.log('HTTP Server is running on: http://localhost:%s', process.env.PORT);
-// });
-// app.listen(process.env.PORT, function () {
-//   console.log('Ready');
-// })
+var httpServer = http.createServer(app);
+var httpsServer = https.createServer({ key: fs.readFileSync('./cert/privatekey.pem', 'utf8'), cert: fs.readFileSync('./cert/certificate.crt', 'utf8') }, app);
+
+
+httpServer.listen(process.env.PORT, function() { console.log('HTTP Server is running on: http://localhost:%s', process.env.PORT); }); 
+httpsServer.listen(process.env.SSLPORT, function() { console.log('HTTPS Server is running on: https://localhost:%s', process.env.SSLPORT); });
+
 module.exports = app;
