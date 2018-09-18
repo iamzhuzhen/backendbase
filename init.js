@@ -1,48 +1,53 @@
-var fs = require('fs');
-var path = require('path');
-var app_config = require(path.join(__dirname,'/components/config/app-config.js'))
+const fs = require('fs-extra')
+const path = require('path');
+require(path.join(__dirname,'/config/globalVariable.js'));
+
 //init global variable
-var global_variable = require(path.join(__dirname,'/components/config/global-variable.js'));
+// const global_variable = require(path.join(__dirname,'/components/config/global-variable.js'));
 //init components
-const module_path = path.join(__dirname,'/components/modules')
-var self = {
-    init:() => {
-        self.loadingModules();
-    },
-    loadingModules:() => {
-        let modules_names = app_config['modules'];
-        for(let index in modules_names) {
-            self.loadingModulesDir(modules_names[index]);
-            
-        }
-    },
-    loadingModulesDir:(module_dir) => {
-        let module_config = self.loadingModuleConfig(module_dir);
-        let module_files = fs.readdirSync(path.join(module_path, module_dir), 'utf-8');
-        self.loadingModuleIncludeFiles(module_config);
-    },
-    loadingModuleConfig:(module_dir) => {
-        return require(path.join(module_path, module_dir, 'config.js'))
-    },
-    loadingModuleIncludeFiles:(module_config) => {
-        global.app_files[module_config.name] = {};
-        for(let index in module_config.include) {
-            if('models' == index) {
-                global.app_files[module_config.name][index] = {};
-                for(let model in module_config.include.models) {
-                    global.app_files[module_config.name][index][module_config.include.models[model]] = path.join(module_path, module_config.name, index, module_config.include[index][model])
-                }
-            } else {
-                global.app_files[module_config.name][index] = path.join(module_path, module_config.name, module_config.include[index]);
-            } 
-        }
-    },
-    loadingRoutes:(app) => {
-        for(let module_name in global.app_files) {
-            app.use('/'+ module_name.toLowerCase(),require(global.app_files[module_name]['route']));
-        }
+// const module_path = path.join(__dirname,'/components/modules')
+const self = {
+    init:(app) => {
+        registerAppSrc();
+        registerRoutes(app);
+        registerGlobal();
     }
 }
 
-self.init();
+function registerAppSrc() {
+    const srcFilesPath = path.join(__dirname,'/src')
+    readDirSync(srcFilesPath,SRC_FILES)
+}
+
+function registerRoutes(app) {
+    let modules = SRC_FILES.components.modules;
+    for(let module_name in modules) {
+        const config_dir = SRC_FILES['components']['modules'][module_name]['config'];
+        const config = FN_LOADING_SOURCE(config_dir);
+        const route_dir = SRC_FILES['components']['modules'][module_name][config.route];
+        app.use('/'+ config.root,FN_LOADING_SOURCE(route_dir));
+    }
+}
+
+function registerGlobal() {
+    const handler_dir = SRC_FILES['handler'];
+    for(let handler in handler_dir) {
+        global[handler] = FN_LOADING_SOURCE(handler_dir[handler]);
+    }
+}
+
+function readDirSync(path,dirObject) {
+    let srcFiles = fs.readdirSync(path);
+    for(let dir of srcFiles) {  
+        let dirPath = `${path}/${dir}`
+        const info = fs.statSync(dirPath)	
+        if(info.isDirectory()) {
+            dirObject[dir]= {};  
+            readDirSync(dirPath,dirObject[dir]);
+        } else {
+            let fileName = dir.slice(0,dir.lastIndexOf('.'));
+            dirObject[fileName] = dirPath;
+        }
+    }
+}
 module.exports = self;
