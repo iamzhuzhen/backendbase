@@ -1,7 +1,7 @@
 
 const fs = require('fs-extra')
 const path = require('path');
-const key = 'roleMatrix'
+const key = 'role'
 const configContent = `
 const config  = {
     name:'${key}Engine',
@@ -13,7 +13,7 @@ module.exports  = config;`;
 const routeContent = `const express = require('express');
 const router = express.Router();
 const routesVersion = require('express-routes-versioning')();
-const controller = require(SRC_FILES.components.modules.${key}Engine.controller);
+const controller = require(SRC_FILES.components.modules.${key}Engine.${key}Controller);
 router.get('/getRequest',
   routesVersion({
     '1.0.0': controller.getRequest
